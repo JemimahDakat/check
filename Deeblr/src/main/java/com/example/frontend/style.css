@@ -1,0 +1,304 @@
+/* =========================================
+   1. GLOBAL SETTINGS
+   ========================================= */
+/* The "Reset": This removes the default spaces browsers add
+   so everything looks the same on Chrome, Safari, etc. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* =========================================
+   2. LOGIN & REGISTER PAGE
+   ========================================= */
+/* Splits the screen into two halves (Blue Left, White Right) */
+.login-container {
+    display: flex;
+    height: 100vh; /* 100vh means "100% of the screen height" */
+    width: 100%;
+}
+
+/* LEFT SIDE: The Blue Gradient Panel */
+.brand-panel {
+    width: 40%;
+    /* Creates the diagonal blue fade effect */
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: flex;
+    align-items: center;    /* Centers logo vertically */
+    justify-content: center; /* Centers logo horizontally */
+    color: white;
+}
+
+/* The "DEEBLR" text style */
+.brand-logo {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px; /* Spreads the letters out slightly */
+}
+
+/* The box around the "9" logo */
+.logo-icon {
+    border: 2px solid white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+/* RIGHT SIDE: The White Form Area */
+.form-panel {
+    width: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
+
+/* Limits the width of the form so it doesn't stretch too wide */
+.login-box {
+    width: 400px;
+}
+
+.login-box h2 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #888; /* Grey text */
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+/* The "Log in as..." box showing your previous account */
+.user-card {
+    display: flex;
+    align-items: center;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    background: #fafafa;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: #ddd;
+    border-radius: 50%; /* Makes the box a perfect circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    margin-right: 15px;
+}
+
+.user-info {
+    flex-grow: 1; /* Pushes the "Remove" button to the far right */
+    font-size: 14px;
+}
+
+.remove-link {
+    color: #ff4444; /* Red color for remove */
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Styling for all text boxes (Email, Password, etc.) */
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* The area with "Forgot Password?" links */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.actions a {
+    color: #666;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+/* The main blue button */
+.btn-primary {
+    background-color: #2a5298;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.footer-text {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #888;
+    text-align: right;
+}
+
+/* =========================================
+   3. FEED PAGE (Inside the App)
+   ========================================= */
+/* Sets the background color for the whole feed page */
+.feed-body {
+    background-color: #f9f9f9;
+}
+
+/* Top Navigation Bar */
+.navbar {
+    background: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.brand-logo.dark {
+    color: #2a5298; /* Blue logo on white background */
+}
+
+/* Middle links (Feed, Explore, etc.) */
+.nav-center a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #777;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-center a.active {
+    color: #2a5298; /* Highlights the current page link */
+}
+
+/* User profile pill on the top right */
+.user-pill {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 5px 15px;
+    border-radius: 20px; /* Fully rounded edges */
+    font-size: 14px;
+}
+
+.avatar-small {
+    width: 24px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 50%;
+    margin-right: 8px;
+    text-align: center;
+    line-height: 24px;
+    color: white;
+}
+
+/* Centers the feed in the middle of the screen */
+.feed-container {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+/* The little red "New" or "Hot" label */
+.badge {
+    background: #ffebeb;
+    color: #d93025;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.ticket-id {
+    margin-left: auto; /* Pushes ticket ID to far right */
+    color: #2a5298;
+    font-size: 12px;
+}
+
+/* The Post Box (White card style) */
+.card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02); /* Slight shadow for depth */
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.avatar-circle, .avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.avatar-circle {
+    background: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.meta strong {
+    font-size: 14px;
+}
+
+.tag {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.tag.friend {
+    color: #2ecc71; /* Green color for friends */
+}
+
+.date {
+    margin-left: auto;
+    color: #999;
+    font-size: 12px;
+}
+
+.image-container img {
+    width: 100%; /* Ensures images fit inside the card */
+    border-radius: 8px;
+    margin-top: 15px;
+}

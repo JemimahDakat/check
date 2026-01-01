@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deeblr - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="brand-panel">
+        <div class="brand-logo"><span class="logo-icon">9</span> DEEBLR</div>
+    </div>
+
+    <div class="form-panel">
+        <div class="login-box">
+            <h2>Login</h2>
+            <p class="subtitle">Please select your account</p>
+
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+
+                <div class="actions">
+                    <a href="#">Forgot password?</a>
+                    <button type="submit" class="btn-primary">Login ></button>
+                </div>
+            </form>
+
+            <p class="footer-text">Don't have an account? <a href="register.html">Sign up</a></p>
+            <div id="error-msg" style="color: red; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            // 1. Send data to Java Backend
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            // 2. Check result
+            if (response.ok) {
+                // Save the username so we can show it on the feed page
+                localStorage.setItem('user', result.username);
+                window.location.href = 'feed.html';
+            } else {
+                document.getElementById('error-msg').innerText = result.message || "Login failed";
+            }
+        } catch (error) {
+            console.error("Connection error:", error);
+            alert("Server connection failed. Make sure Spring Boot is running!");
+        }
+    });
+</script>
+</body>
+</html>
