@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deeblr - New Post</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/auth-check.js"></script>
+</head>
+<body class="feed-body">
+
+<nav class="navbar">
+    <div class="brand-logo dark">DEEBLR</div>
+    <div class="nav-center">
+        <a href="feed.html">Feed</a>
+        <a href="upload.html" class="active">Upload</a>
+    </div>
+    <div class="user-pill">
+        <div class="avatar-small">U</div>
+        <span>User</span>
+    </div>
+</nav>
+
+<div class="feed-container">
+    <div class="card">
+        <h3>Create New Post</h3>
+
+        <form id="postForm">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Post as:</label>
+            <input type="text" id="postUsername" placeholder="Enter your username"
+                   style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd;" required>
+
+            <textarea id="postContent" placeholder="Write a caption..."
+                      style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd;" required></textarea>
+
+            <div style="margin-bottom:20px; border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px;">
+                <input type="file" id="postFile" accept="image/*,video/*" required style="display: block; margin: 0 auto;">
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%">Post Update</button>
+            <div id="uploadStatus" style="margin-top:10px; text-align:center;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // get the values the user typed
+        const username = document.getElementById('postUsername').value;
+        const content = document.getElementById('postContent').value;
+        const fileInput = document.getElementById('postFile');
+        const status = document.getElementById('uploadStatus');
+
+        if(fileInput.files.length === 0) return alert("Please select a file!");
+
+        const formData = new FormData();
+        formData.append("content", content);
+        formData.append("username", username); //pulls data from database to cutomise for each user
+        formData.append("file", fileInput.files[0]);
+
+        status.innerHTML = '<span style="color:blue">Uploading... Please wait.</span>';
+
+        try {
+            const response = await fetch('http://localhost:8080/api/posts', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                status.innerHTML = '<span style="color:green">Success! Redirecting...</span>';
+                setTimeout(() => {
+                    window.location.href = 'feed.html';
+                }, 1000);
+            } else {
+                const errorText = await response.text();
+                // only happens if user is not on database yet
+                status.innerHTML = `<span style="color:red">Error: ${errorText}</span>`;
+            }
+        } catch (error) {
+            console.error("Upload Error:", error);
+            status.innerHTML = `<span style="color:red">Server connection failed.</span>`;
+        }
+    });
+</script>
+
+</body>
+</html>

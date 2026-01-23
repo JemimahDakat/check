@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deeblr - Home</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="feed-body"> <nav class="navbar">
+    <div class="brand-logo">
+        <img src="../../java/com/example/frontend/logo.png" alt="Deeblr Logo" style="height: 60px; width: auto;">
+    </div>
+
+    <div class="nav-center">
+        <a href="index.html" class="active"><img src="homepage.png" style="width:20px;height:20px;">Homepage</a>
+        <a href="feed.html">Feed</a>
+        <a href="upload.html"><img src="upload.png" style="width:20px;height:20px;">Upload</a>
+    </div>
+
+    <div class="user-pill">
+        <a href="login.html" style="text-decoration:none; color:#333; font-size:14px; font-weight:bold;">Login</a>
+    </div>
+</nav>
+
+<div class="feed-container">
+
+    <div class="card" style="text-align: center; padding: 50px;">
+        <h1 style="color: #2a5298; margin-bottom: 15px;">Welcome to Deeblr</h1>
+        <p style="color: #666; font-size: 16px; margin-bottom: 30px; line-height: 1.6;">
+            The unified platform for detecting deepfakes in real-time.<br>
+            Verify videos, analyze audio, and ensure authenticity in a digital world.
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 20px;">
+            <a href="login.html" class="btn-primary" style="text-decoration: none; display: inline-block;">Login</a>
+
+            <a href="register.html" style="text-decoration: none; padding: 10px 25px; border: 1px solid #2a5298; color: #2a5298; border-radius: 5px; font-weight: bold;">
+                Create Account
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="avatar-circle" style="background: #2a5298;">AI</div>
+            <div class="meta">
+                <strong>Advanced Detection</strong>
+                <span class="tag friend">Feature</span>
+            </div>
+        </div>
+        <p>Our system uses a hybrid CNN + RNN model to analyze both visual artifacts and audio inconsistencies, providing a comprehensive deepfake score.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="avatar-circle" style="background: #d93025;">RT</div>
+            <div class="meta">
+                <strong>Real-Time Analysis</strong>
+                <span class="tag friend">Feature</span>
+            </div>
+        </div>
+        <p>Upload content and get instant feedback. We process frames in real-time to ensure you can verify media as you consume it.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
