@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deeblr Feed</title>
+
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .nav { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .post { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        .loading { text-align: center; color: #666; }
+    </style>
+
+    <script>
+        (function() {
+            const token = localStorage.getItem("jwt_token");
+            if (!token) {
+                alert("Login to access this!"); // The Popup you asked for
+                window.location.href = "login.html"; // Kick them out
+            }
+        })();
+    </script>
+</head>
+<body>
+
+<div class="nav">
+    <h2>Deeblr Feed</h2>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+</div>
+
+<div id="feed-container">
+    <p class="loading">Loading posts...</p>
+</div>
+
+<script>
+    // 1. LOGOUT
+    function logout() {
+        localStorage.removeItem("jwt_token"); // Destroy token
+        window.location.href = "login.html";
+    }
+
+    // 2. LOAD POSTS
+    async function loadPosts() {
+        const token = localStorage.getItem("jwt_token");
+
+        try {
+            // Fetch Data with Authorization Header
+            const response = await fetch('http://localhost:8080/api/posts', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token, // ✅ Send JWT
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Check for 403/401 (Token Expired or Invalid)
+            if (response.status === 401 || response.status === 403) {
+                alert("Session expired. Please login again.");
+                logout();
+                return;
+            }
+
+            const posts = await response.json();
+            const container = document.getElementById('feed-container');
+            container.innerHTML = ""; // Clear loading text
+
+            // Render Posts
+            if (posts.length === 0) {
+                container.innerHTML = "<p>No posts yet.</p>";
+                return;
+            }
+
+            posts.forEach(post => {
+                const postHtml = `
+                        <div class="post">
+                            <h3>${post.username}</h3>
+                            <p>${post.content}</p>
+                            ${post.mediaUrl ? `<img src="${post.mediaUrl}" style="max-width:100%; margin-top:10px;">` : ''}
+                            <hr>
+                            <small>Deepfake Score: ${post.fakeConfidence ? (post.fakeConfidence * 100).toFixed(1) + '%' : 'Not analyzed'}</small>
+                        </div>
+                    `;
+                container.innerHTML += postHtml;
+            });
+
+        } catch (error) {
+            console.error("Error loading posts:", error);
+            document.getElementById('feed-container').innerHTML = "<p style='color:red'>Error loading feed.</p>";
+        }
+    }
+
+    // Run on load
+    document.addEventListener("DOMContentLoaded", loadPosts);
+</script>
+</body>
+</html>

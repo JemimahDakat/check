@@ -8,7 +8,9 @@
 <body>
 <div class="login-container">
     <div class="brand-panel">
-        <div class="brand-logo"><span class="logo-icon">9</span> DEEBLR</div>
+        <div class="brand-logo">
+            <img src="../../java/com/example/frontend/logo.png" alt="Deeblr Logo" style="height: 60px; width: auto;">
+        </div>
     </div>
 
     <div class="form-panel">
@@ -36,32 +38,36 @@
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const data = {
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value
-        };
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Use URLSearchParams
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('password', password);
 
         try {
-            // 1. Send data to Java Backend
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            // send to  '/login' endpoint
+            const response = await fetch('http://localhost:8080/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
             });
 
-            const result = await response.json();
-
-            // 2. Check result
+            // check status  (200 = OK, 401 = Bad Password)
             if (response.ok) {
-                // Save the username so we can show it on the feed page
-                localStorage.setItem('user', result.username);
+                // Save username locally so we can show it on the feed
+                localStorage.setItem('user', username);
+                // Redirect to Feed
                 window.location.href = 'feed.html';
             } else {
-                document.getElementById('error-msg').innerText = result.message || "Login failed";
+                document.getElementById('error-msg').innerText = "Invalid username or password";
             }
         } catch (error) {
             console.error("Connection error:", error);
-            alert("Server connection failed. Make sure Spring Boot is running!");
+            document.getElementById('error-msg').innerText = "Server not responding. Is Java running?";
         }
     });
 </script>
