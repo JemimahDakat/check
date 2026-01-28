@@ -6,12 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
 public interface UserRepo extends JpaRepository<User, Long> {
-    // query method to check if a user exists
-    boolean existsByEmail(String email);
-    boolean existsByUsername(String username);
-
-    //finds username for login
     Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
+
+    // Find user by the  code
+    User findByVerificationCode(String code);
 }

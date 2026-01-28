@@ -17,12 +17,12 @@ public class userservicedetailsservice implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Check the database for the user
+        //check the database for the user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         // 2. Return a "Spring Security" user object
-        // Note: We currently treat everyone as a generic "USER" role
+        // currently treat everyone as a  "USER" role
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword()) // Pass the password from DB to Spring to check
