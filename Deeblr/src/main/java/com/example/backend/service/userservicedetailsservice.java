@@ -15,18 +15,20 @@ public class userservicedetailsservice implements UserDetailsService {
     @Autowired
     private UserRepo userRepository;
 
+    //sping calls automatically when it needs to verify a user
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        //check the database for the user
+        //check the database using our repo
+        //used .orElseThrow() because optional forces us to handle the "User Not Found" scenario explicitly.
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // 2. Return a "Spring Security" user object
-        // currently treat everyone as a  "USER" role
+        // Convert to Spring Security's format.
+        //build a standard org.springframework.security.core.userdetails.User object.
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
-                .password(user.getPassword()) // Pass the password from DB to Spring to check
-                .authorities(Collections.emptyList())
+                .password(user.getPassword()) // comparees the passworf with what the user typed.
+                .authorities(Collections.emptyList()) // for now send an empty list untill add new roles
                 .build();
     }
 }

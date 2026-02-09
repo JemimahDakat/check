@@ -16,7 +16,7 @@
     <div class="form-panel">
         <div class="login-box">
             <h2>Login</h2>
-            <p class="subtitle">Please select your account</p>
+            <p class="subtitle">Please login to  your account</p>
 
             <form id="loginForm">
                 <input type="text" id="username" placeholder="Username" required>
@@ -35,40 +35,45 @@
 </div>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    // interrupt the form submission do the page does not reload contantly
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-        // Use URLSearchParams
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('password', password);
+        // api call - sned credentials to the authcontroller
+        // use fetvh - standard to httpss requests in js
+        fetch('http://localhost:8080/api/auth/login?username=' + username + '&password=' + password, {
+            method: 'POST'
+        })
+            .then(async response => {
+                if (response.ok) {
+                    // backend returned JSON with the token
+                    const data = await response.json();
 
-        try {
-            // send to  '/login' endpoint
-            const response = await fetch('http://localhost:8080/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formData
+                    console.log("Login Success! Token:", data.token); // debugging help
+
+                    //state manegement
+                    // save the token in localstorage
+                    // token stays in local storage until its deleted by logging out
+                    // save the Token and Username
+                    localStorage.setItem("jwt_token", data.token);
+                    localStorage.setItem("username", data.username);
+
+                    // redirect user to feed
+                    window.location.href = "feed.html";
+                } else {
+                    //show the error sent by backend and display message
+                    const text = await response.text();
+                    document.getElementById('error-msg').innerText = text;
+                }
+            })
+            .catch(error => {
+                // a network error - added this to help pinpont what error
+                console.error('Error:', error);
+                document.getElementById('error-msg').innerText = "Network Error.";
             });
-
-            // check status  (200 = OK, 401 = Bad Password)
-            if (response.ok) {
-                // Save username locally so we can show it on the feed
-                localStorage.setItem('user', username);
-                // Redirect to Feed
-                window.location.href = 'feed.html';
-            } else {
-                document.getElementById('error-msg').innerText = "Invalid username or password";
-            }
-        } catch (error) {
-            console.error("Connection error:", error);
-            document.getElementById('error-msg').innerText = "Server not responding. Is Java running?";
-        }
     });
 </script>
 </body>

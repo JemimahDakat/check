@@ -1,8 +1,6 @@
 /* =========================================
    1. GLOBAL SETTINGS
    ========================================= */
-/* The "Reset": This removes the default spaces browsers add
-   so everything looks the same on Chrome, Safari, etc. */
 * {
     margin: 0;
     padding: 0;
@@ -10,35 +8,34 @@
     font-family: 'Segoe UI', sans-serif;
 }
 
+body {
+    background-color: #f9f9f9; /* Matches .feed-body */
+}
+
 /* =========================================
    2. LOGIN & REGISTER PAGE
    ========================================= */
-/* Splits the screen into two halves (Blue Left, White Right) */
 .login-container {
     display: flex;
-    height: 100vh; /* 100vh means "100% of the screen height" */
+    height: 100vh;
     width: 100%;
 }
 
-/* LEFT SIDE: The Blue Gradient Panel */
 .brand-panel {
     width: 40%;
-    /* Creates the diagonal blue fade effect */
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     display: flex;
-    align-items: center;    /* Centers logo vertically */
-    justify-content: center; /* Centers logo horizontally */
+    align-items: center;
+    justify-content: center;
     color: white;
 }
 
-/* The "DEEBLR" text style */
 .brand-logo {
     font-size: 24px;
     font-weight: bold;
-    letter-spacing: 2px; /* Spreads the letters out slightly */
+    letter-spacing: 2px;
 }
 
-/* The box around the "9" logo */
 .logo-icon {
     border: 2px solid white;
     padding: 2px 6px;
@@ -46,7 +43,6 @@
     margin-right: 8px;
 }
 
-/* RIGHT SIDE: The White Form Area */
 .form-panel {
     width: 60%;
     display: flex;
@@ -55,7 +51,6 @@
     background-color: white;
 }
 
-/* Limits the width of the form so it doesn't stretch too wide */
 .login-box {
     width: 400px;
 }
@@ -66,12 +61,11 @@
 }
 
 .subtitle {
-    color: #888; /* Grey text */
+    color: #888;
     margin-bottom: 30px;
     font-size: 14px;
 }
 
-/* The "Log in as..." box showing your previous account */
 .user-card {
     display: flex;
     align-items: center;
@@ -86,7 +80,7 @@
     width: 40px;
     height: 40px;
     background: #ddd;
-    border-radius: 50%; /* Makes the box a perfect circle */
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,18 +89,17 @@
 }
 
 .user-info {
-    flex-grow: 1; /* Pushes the "Remove" button to the far right */
+    flex-grow: 1;
     font-size: 14px;
 }
 
 .remove-link {
-    color: #ff4444; /* Red color for remove */
+    color: #ff4444;
     text-decoration: none;
     font-size: 12px;
     font-weight: bold;
 }
 
-/* Styling for all text boxes (Email, Password, etc.) */
 input {
     width: 100%;
     padding: 12px;
@@ -115,7 +108,6 @@ input {
     border-radius: 5px;
 }
 
-/* The area with "Forgot Password?" links */
 .actions {
     display: flex;
     justify-content: space-between;
@@ -129,7 +121,6 @@ input {
     font-size: 13px;
 }
 
-/* The main blue button */
 .btn-primary {
     background-color: #2a5298;
     color: white;
@@ -148,14 +139,12 @@ input {
 }
 
 /* =========================================
-   3. FEED PAGE (Inside the App)
+   3. FEED PAGE COMPONENTS
    ========================================= */
-/* Sets the background color for the whole feed page */
 .feed-body {
     background-color: #f9f9f9;
 }
 
-/* Top Navigation Bar */
 .navbar {
     background: white;
     padding: 15px 30px;
@@ -166,10 +155,9 @@ input {
 }
 
 .brand-logo.dark {
-    color: #2a5298; /* Blue logo on white background */
+    color: #2a5298;
 }
 
-/* Middle links (Feed, Explore, etc.) */
 .nav-center a {
     margin: 0 15px;
     text-decoration: none;
@@ -179,16 +167,15 @@ input {
 }
 
 .nav-center a.active {
-    color: #2a5298; /* Highlights the current page link */
+    color: #2a5298;
 }
 
-/* User profile pill on the top right */
 .user-pill {
     display: flex;
     align-items: center;
     background: #f0f0f0;
     padding: 5px 15px;
-    border-radius: 20px; /* Fully rounded edges */
+    border-radius: 20px;
     font-size: 14px;
 }
 
@@ -203,7 +190,6 @@ input {
     color: white;
 }
 
-/* Centers the feed in the middle of the screen */
 .feed-container {
     max-width: 800px;
     margin: 30px auto;
@@ -224,7 +210,6 @@ input {
     cursor: pointer;
 }
 
-/* The little red "New" or "Hot" label */
 .badge {
     background: #ffebeb;
     color: #d93025;
@@ -235,19 +220,18 @@ input {
 }
 
 .ticket-id {
-    margin-left: auto; /* Pushes ticket ID to far right */
+    margin-left: auto;
     color: #2a5298;
     font-size: 12px;
 }
 
-/* The Post Box (White card style) */
 .card {
     background: white;
     border: 1px solid #eee;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02); /* Slight shadow for depth */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .card-header {
@@ -288,7 +272,7 @@ input {
 }
 
 .tag.friend {
-    color: #2ecc71; /* Green color for friends */
+    color: #2ecc71;
 }
 
 .date {
@@ -298,7 +282,90 @@ input {
 }
 
 .image-container img {
-    width: 100%; /* Ensures images fit inside the card */
+    width: 100%;
     border-radius: 8px;
     margin-top: 15px;
+}
+
+/* =========================================
+   4. NAVIGATION COMPATIBILITY TWEAKS
+   (Connects HTML classes to your CSS)
+   ========================================= */
+
+/* The HTML uses 'header', your CSS uses 'navbar'. This links them. */
+.header {
+    background: white;
+    padding: 15px 40px;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    position: sticky; /* Makes the bar stick to top */
+    top: 0;
+    z-index: 100;
+}
+
+/* The HTML uses 'brand', your CSS uses 'brand-logo' */
+.brand {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #2a5298;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* The HTML uses 'nav-links', your CSS uses 'nav-center' */
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #777;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #2a5298;
+    font-weight: bold;
+}
+
+/* The HTML uses 'user-badge', your CSS uses 'user-pill' */
+.user-badge {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.user-badge:hover {
+    background: #e9ecef;
+    border-color: #ddd;
+}
+
+.user-avatar-small {
+    width: 24px;
+    height: 24px;
+    background: #2a5298; /* Blue background for initials */
+    color: white;
+    border-radius: 50%;
+    margin-right: 8px;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    font-size: 12px;
 }

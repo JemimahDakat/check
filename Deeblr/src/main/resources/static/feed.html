@@ -5,94 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deeblr Feed</title>
 
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
-        .nav { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .post { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
-        .loading { text-align: center; color: #666; }
+        .breadcrumb { font-size: 12px; color: #888; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .update-bar { display: flex; align-items: center; margin-bottom: 20px; }
+        .back-icon {
+            width: 30px; height: 30px; border: 1px solid #ddd; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center; margin-right: 15px; cursor: pointer;
+            background: white; color: #555;
+        }
     </style>
-
-    <script>
-        (function() {
-            const token = localStorage.getItem("jwt_token");
-            if (!token) {
-                alert("Login to access this!");
-                window.location.href = "login.html"; // Kick them out
-            }
-        })();
-    </script>
 </head>
-<body>
+<body class="feed-body">
 
-<div class="nav">
-    <h2>Deeblr Feed</h2>
-    <button class="btn-logout" onclick="logout()">Logout</button>
+<div class="header">
+    <a href="index.html" class="brand">
+        <div class="brand-logo">
+            <img src="../../java/com/example/frontend/logo.png" alt="Deeblr Logo" style="height: 60px; width: auto;">
+        </div>
+    </a>
+
+    <div class="nav-links">
+        <a href="index.html"><img src="homepage.png" style="width:20px;height:20px;">Homepage</a>
+        <a href="feed.html" class="active"><img src="feed.png" style="width:20px;height:20px;">Feed</a>
+        <a href="upload.html"><img src="upload.png" style="width:20px;height:20px;">Upload</a>
+    </div>
+
+    <div id="auth-section"></div>
 </div>
 
-<div id="feed-container">
-    <p class="loading">Loading posts...</p>
+<div class="feed-container">
+
+    <div class="breadcrumb">
+        <span>Homepage</span> <span style="font-size:10px;">></span> <span>Feed</span>
+    </div>
+
+    <div class="update-bar">
+        <div class="back-icon" onclick="window.history.back()">‹</div>
+        <h3 style="margin:0; font-size:18px; color:#333;">Feed Updates</h3>
+        <span class="badge">Live</span>
+
+    </div>
+
+    <div id="feed-list">
+        <p style="text-align:center; color:#888; margin-top:50px;">Loading posts...</p>
+    </div>
+
 </div>
 
 <script>
-    // 1. LOGOUT
+    // on load - this is what happens when the feed page first opens up
+    window.onload = function() {
+        const token = localStorage.getItem("jwt_token");
+        const username = localStorage.getItem("username");
+
+        // if  they dont have a token, kick them back to login
+        if (!token || !username) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // USER INTERFACE- inject the users name into the header
+        const initial = username.charAt(0).toUpperCase();
+        const authSection = document.getElementById('auth-section');
+
+        authSection.innerHTML = `
+            <div class="user-badge" onclick="logout()">
+                <div class="user-avatar-small" style="background:#2a5298; color:white;">${initial}</div>
+                <span style="margin-left:8px; font-weight:500;">${username}</span>
+                <span style="font-size:10px; margin-left:5px; color:#666;">(Logout)</span>
+            </div>
+        `;
+
+
+        // 3. LOAD POSTS
+        loadPosts();
+    };
+
+    // LOGOUT - delete the token and go back to login
     function logout() {
-        localStorage.removeItem("jwt_token"); // Destroy token
+        localStorage.clear();
         window.location.href = "login.html";
     }
 
-    // 2. LOAD POSTS
+    //GET POSTS
     async function loadPosts() {
         const token = localStorage.getItem("jwt_token");
-
+        const container = document.getElementById('feed-list');
+        //GET /api/posts
         try {
-            // Fetch Data with Authorization Header
             const response = await fetch('http://localhost:8080/api/posts', {
                 method: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + token, // ✅ Send JWT
+                    //AUTHENTICATION
+                    //  attach the token back together so the Backend knows who the user is
+                    'Authorization': 'Bearer ' + token,
                     'Content-Type': 'application/json'
                 }
             });
 
-            // Check for 403/401 (Token Expired or Invalid)
-            if (response.status === 401 || response.status === 403) {
-                alert("Session expired. Please login again.");
+
+            // handle expired sessions
+            if (response.status === 403 || response.status === 401) {
+                alert("Session expired.");
                 logout();
                 return;
             }
-
+            //parse JSON data
             const posts = await response.json();
-            const container = document.getElementById('feed-container');
-            container.innerHTML = ""; // Clear loading text
+            container.innerHTML = "";
 
-            // Render Posts
+            // what happens when there are no posts
             if (posts.length === 0) {
-                container.innerHTML = "<p>No posts yet.</p>";
+                container.innerHTML = `
+                    <div class="card" style="text-align:center; padding:40px;">
+                        <p style="color:#888;">No posts yet.</p>
+                        <a href="upload.html" class="btn-primary" style="text-decoration:none; display:inline-block; margin-top:10px;">Create Post</a>
+                    </div>`;
                 return;
             }
 
+            // use a loop creat html for each post
             posts.forEach(post => {
-                const postHtml = `
-                        <div class="post">
-                            <h3>${post.username}</h3>
-                            <p>${post.content}</p>
-                            ${post.mediaUrl ? `<img src="${post.mediaUrl}" style="max-width:100%; margin-top:10px;">` : ''}
-                            <hr>
-                            <small>Deepfake Score: ${post.fakeConfidence ? (post.fakeConfidence * 100).toFixed(1) + '%' : 'Not analyzed'}</small>
+                const firstLetter = post.username ? post.username.charAt(0).toUpperCase() : '?';
+
+                //Ensure content is never null
+                const postContent = post.content ? post.content : "";
+
+                // This determines if we show a Video Player or an Image Tag
+                let mediaHtml = '';
+                if (post.mediaUrl) {
+                    // Check the 'mediaType' field we send from the backend
+                    if (post.mediaType === 'VIDEO') {
+                        mediaHtml = `
+                            <div class="image-container">
+                                <video controls style="width:100%; border-radius:8px; background:black;">
+                                    <source src="${post.mediaUrl}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>`;
+                    } else {
+                        // Default to Image
+                        mediaHtml = `<div class="image-container"><img src="${post.mediaUrl}"></div>`;
+                    }
+                }
+
+                // format the timestap properly
+                const dateObj = post.createdAt ? new Date(post.createdAt) : new Date();
+                const dateStr = dateObj.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) +
+                    " - " +
+                    dateObj.toLocaleTimeString("en-UK", { hour: '2-digit', minute:'2-digit' });
+
+                // html string
+                const html = `
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="avatar-circle">${firstLetter}</div>
+                            <div class="meta">
+                                <strong>${post.username || 'Unknown'}</strong>
+                                <span class="tag friend">User</span>
+                            </div>
+                            <div class="date">${dateStr}</div>
                         </div>
-                    `;
-                container.innerHTML += postHtml;
+
+                        <div style="font-size:15px; color:#444; margin-bottom:15px; line-height:1.5;">
+                            ${postContent}
+                        </div>
+
+                        ${mediaHtml} </div>
+                `;
+                // append new card to the list
+                container.innerHTML += html;
             });
 
+
         } catch (error) {
-            console.error("Error loading posts:", error);
-            document.getElementById('feed-container').innerHTML = "<p style='color:red'>Error loading feed.</p>";
+            console.error("Error:", error);
+            container.innerHTML = "<p style='text-align:center; color:red;'>Server error. Is backend running?</p>";
         }
     }
-
-    // Run on load
-    document.addEventListener("DOMContentLoaded", loadPosts);
 </script>
+
 </body>
 </html>

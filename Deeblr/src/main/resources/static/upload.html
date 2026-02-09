@@ -4,33 +4,53 @@
     <meta charset="UTF-8">
     <title>Deeblr - New Post</title>
     <link rel="stylesheet" href="style.css">
-    <script src="js/auth-check.js"></script>
+    <style>
+        .breadcrumb { font-size: 12px; color: #888; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .update-bar { display: flex; align-items: center; margin-bottom: 20px; }
+        .back-icon {
+            width: 30px; height: 30px; border: 1px solid #ddd; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center; margin-right: 15px; cursor: pointer;
+            background: white; color: #555;
+        }
+    </style>
 </head>
 <body class="feed-body">
 
-<nav class="navbar">
-    <div class="brand-logo dark">DEEBLR</div>
-    <div class="nav-center">
-        <a href="feed.html">Feed</a>
-        <a href="upload.html" class="active">Upload</a>
+<div class="header">
+    <a href="index.html" class="brand">
+        <div class="brand-logo">
+            <img src="../../java/com/example/frontend/logo.png" alt="Deeblr Logo" style="height: 60px; width: auto;">
+        </div>
+    </a>
+
+    <div class="nav-links">
+        <a href="index.html"><img src="homepage.png" style="width:20px;height:20px;">Homepage</a>
+        <a href="feed.html"><img src="feed.png" style="width:20px;height:20px;">Feed</a>
+        <a href="upload.html" class="active"><img src="upload.png" style="width:20px;height:20px;">Upload</a>
     </div>
-    <div class="user-pill">
-        <div class="avatar-small">U</div>
-        <span>User</span>
-    </div>
-</nav>
+
+    <div id="auth-section"></div>
+</div>
 
 <div class="feed-container">
-    <div class="card">
-        <h3>Create New Post</h3>
 
+    <div class="breadcrumb">
+        <span>Homepage</span> <span style="font-size:10px;">></span> <span>Upload</span>
+    </div>
+
+    <div class="update-bar">
+        <div class="back-icon" onclick="window.history.back()">‹</div>
+        <h3 style="margin:0; font-size:18px; color:#333;">Create Post</h3>
+    </div>
+
+    <div class="card">
         <form id="postForm">
-            <label style="font-size:12px; font-weight:bold; color:#555;">Post as:</label>
-            <input type="text" id="postUsername" placeholder="Enter your username"
-                   style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd;" required>
+            <p style="font-size:14px; color:#666; margin-bottom:15px;">
+                Posting as: <strong id="displayUsername" style="color:#2a5298;">Loading...</strong>
+            </p>
 
             <textarea id="postContent" placeholder="Write a caption..."
-                      style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd;" required></textarea>
+                      style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd; min-height: 80px;" required></textarea>
 
             <div style="margin-bottom:20px; border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px;">
                 <input type="file" id="postFile" accept="image/*,video/*" required style="display: block; margin: 0 auto;">
@@ -43,28 +63,70 @@
 </div>
 
 <script>
+    // check login on load
+    window.onload = function() {
+        const token = localStorage.getItem("jwt_token");
+        const username = localStorage.getItem("username");
 
+        if (!token || !username) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // display username so the user knows which account is logged in
+        document.getElementById('displayUsername').innerText = username;
+
+        //setup Header
+        const initial = username.charAt(0).toUpperCase();
+        document.getElementById('auth-section').innerHTML = `
+            <div class="user-badge" onclick="logout()">
+                <div class="user-avatar-small" style="background:#2a5298; color:white;">${initial}</div>
+                <span style="margin-left:8px; font-weight:500;">${username}</span>
+                <span style="font-size:10px; margin-left:5px; color:#888;">(Logout)</span>
+            </div>
+        `;
+    };
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "login.html";
+    }
+
+    //HANDLE upload form
     document.getElementById('postForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        // get the values the user typed
-        const username = document.getElementById('postUsername').value;
+        // gather all the data
+        const token = localStorage.getItem("jwt_token");
         const content = document.getElementById('postContent').value;
         const fileInput = document.getElementById('postFile');
         const status = document.getElementById('uploadStatus');
 
+        // validation make sure they upload a file
         if(fileInput.files.length === 0) return alert("Please select a file!");
 
+
+        // form data construtcion
+        //use FormData because we are uploading a binary file not jus text
         const formData = new FormData();
         formData.append("content", content);
-        formData.append("username", username); //pulls data from database to cutomise for each user
         formData.append("file", fileInput.files[0]);
+        // dont need to append username here because
+        // the backend now decodes what the user is logged in  from the Token.
 
         status.innerHTML = '<span style="color:blue">Uploading... Please wait.</span>';
 
         try {
+            // post api/posts
             const response = await fetch('http://localhost:8080/api/posts', {
                 method: 'POST',
+                headers: {
+                    //authentication is needed
+                    'Authorization': 'Bearer ' + token // <--- Token proves identity
+                    // dont set Content-Type
+                    //the browser sets the Content-Type to 'multipart/form-data' automatically when using FormData
+                    // tried to manually set it to 'application/json', the upload will failed.
+                },
                 body: formData
             });
 
@@ -75,7 +137,6 @@
                 }, 1000);
             } else {
                 const errorText = await response.text();
-                // only happens if user is not on database yet
                 status.innerHTML = `<span style="color:red">Error: ${errorText}</span>`;
             }
         } catch (error) {

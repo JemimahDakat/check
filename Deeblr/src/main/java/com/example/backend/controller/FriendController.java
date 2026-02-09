@@ -22,7 +22,7 @@ public class FriendController {
     @Autowired private UserRepo userRepo;
     @Autowired private FriendRepo friendshipRepository;
 
-    // 1. SEND REQUEST (Changed to accept Username String)
+    // 1. SEND FRIEND REQUEST
     @PostMapping("/request/{targetUsername}")
     public ResponseEntity<?> sendFriendRequest(@PathVariable String targetUsername, Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
@@ -32,13 +32,16 @@ public class FriendController {
         User addressee = userRepo.findByUsername(targetUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        //ENSURE USER CANNOT ADD THEMSELVES
         if (requester.equals(addressee)) return ResponseEntity.badRequest().body("Cannot add yourself.");
 
-        boolean exists = friendshipRepository.existsByRequesterAndAddressee(requester, addressee) ||
-                friendshipRepository.existsByRequesterAndAddressee(addressee, requester);
+        //check both directions
+        //cannot do A->B if B->A already exists.
+        if (friendshipRepository.existsConnection(requester, addressee)) {
+            return ResponseEntity.badRequest().body("Request already exists.");
+        }
 
-        if (exists) return ResponseEntity.badRequest().body("Request already exists.");
-
+        //create relationship
         Friend friendship = new Friend();
         friendship.setRequester(requester);
         friendship.setAddressee(addressee);
@@ -49,17 +52,18 @@ public class FriendController {
         return ResponseEntity.ok(Collections.singletonMap("message", "Request sent!"));
     }
 
-    // 2. ACCEPT REQUEST (Changed to accept Username String)
+    // ACCEPT REQUEST
     @PostMapping("/accept/{senderUsername}")
     public ResponseEntity<?> acceptFriendRequest(@PathVariable String senderUsername, Principal principal) {
         String currentUsername = principal.getName();
         User currentUser = userRepo.findByUsername(currentUsername).orElseThrow();
         User requester = userRepo.findByUsername(senderUsername).orElseThrow();
 
-        // Find the pending request
+        // find the request where anothe user ased the current user
         Friend friendship = friendshipRepository.findByRequesterAndAddressee(requester, currentUser)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
+        // only accept if its pending
         if (friendship.getStatus() == FriendStatus.PENDING) {
             friendship.setStatus(FriendStatus.ACCEPTED);
             friendshipRepository.save(friendship);
@@ -68,15 +72,15 @@ public class FriendController {
         return ResponseEntity.badRequest().body("Invalid status");
     }
 
-    // 3. GET PENDING REQUESTS (Missing piece!)
+    // GET PENDING REQUESTS
     @GetMapping("/requests")
     public List<String> getPendingRequests(Principal principal) {
         User currentUser = userRepo.findByUsername(principal.getName()).orElseThrow();
 
-        // Find all rows where I am the addressee AND status is PENDING
-        List<Friend> requests = friendshipRepository.findByAddresseeAndStatus(currentUser, FriendStatus.PENDING);
+        // Find all rows where adressee is the target AND status is PENDING
+        List<Friend> requests = friendshipRepository.findAllByAddresseeAndStatus(currentUser, FriendStatus.PENDING);
 
-        // Return just the usernames of people asking
+        // just extract the username string and push to frontend
         return requests.stream()
                 .map(f -> f.getRequester().getUsername())
                 .collect(Collectors.toList());
