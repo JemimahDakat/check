@@ -28,6 +28,8 @@ public class Post {
     private String mediaType; // "IMAGE" or "VIDEO"
     //Defaults to the current time when the object is created.
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "is_deepfake")
+    private Boolean isDeepfake = false;
 
 
     //getters and setters
@@ -48,4 +50,7 @@ public class Post {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getIsDeepfake() { return isDeepfake; }
+    public void setIsDeepfake(Boolean isDeepfake) { this.isDeepfake = isDeepfake; }
 }

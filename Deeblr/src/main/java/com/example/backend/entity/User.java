@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class User {
 
     //@Id marks this field as the Primary Key (the unique identifier for this row).
-    //    // @GeneratedValue(strategy = IDENTITY) tells the database to auto-increment the number every time a new user is registered.
+    // @GeneratedValue(strategy = IDENTITY) tells the database to auto-increment the number every time a new user is registered.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,9 +44,9 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    //PrePersist is a "Lifecycle Hook".
-    //    // It runs automatically right before the data is saved to the database.
-    //    // We use it to set default values (like the current time) so we don't forget to do it manually.
+    //PrePersist is a Lifecycle Hook
+    // It runs automatically right before the data is saved to the database.
+    // We use it to set default values (like the current time) so we don't forget to do it manually.
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

@@ -56,14 +56,18 @@
                 <input type="file" id="postFile" accept="image/*,video/*" required style="display: block; margin: 0 auto;">
             </div>
 
-            <button type="submit" class="btn-primary" style="width:100%">Post Update</button>
+            <!-- Hidden input to store the deepfake verdict before submission -->
+            <input type="hidden" id="deepfakeVerdict" value="false">
+
+            <div id="analysisStatus" style="margin-bottom:10px; text-align:center; font-size:14px;"></div>
+
+            <button type="submit" id="submitBtn" class="btn-primary" style="width:100%">Post Update</button>
             <div id="uploadStatus" style="margin-top:10px; text-align:center;"></div>
         </form>
     </div>
 </div>
 
 <script>
-    // check login on load
     window.onload = function() {
         const token = localStorage.getItem("jwt_token");
         const username = localStorage.getItem("username");
@@ -73,10 +77,8 @@
             return;
         }
 
-        // display username so the user knows which account is logged in
         document.getElementById('displayUsername').innerText = username;
 
-        //setup Header
         const initial = username.charAt(0).toUpperCase();
         document.getElementById('auth-section').innerHTML = `
             <div class="user-badge" onclick="logout()">
@@ -92,40 +94,90 @@
         window.location.href = "login.html";
     }
 
-    //HANDLE upload form
+    // Run analysis automatically when the user selects a file
+    document.getElementById('postFile').addEventListener('change', async function() {
+        const file = this.files[0];
+        const statusText = document.getElementById('analysisStatus');
+
+        if (!file) return;
+
+        // Images do not need deepfake scanning, only videos do
+        if (!file.type.startsWith('video/')) {
+            statusText.innerText = "Images bypass AI scanning. Ready to post!";
+            statusText.style.color = "green";
+            document.getElementById('deepfakeVerdict').value = "false";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        statusText.innerText = "Scanning video... Please wait.";
+        statusText.style.color = "blue";
+
+        document.getElementById('submitBtn').disabled = true;
+
+        try {
+            const token = localStorage.getItem("jwt_token");
+
+            const response = await fetch("http://localhost:8080/api/posts/analyse", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            // Store the boolean result in the hidden input so the submit handler can read it
+            document.getElementById('deepfakeVerdict').value = result.is_fake;
+
+            if (result.is_fake) {
+                statusText.innerText = `Deepfake Detected (${result.confidence}% confidence)`;
+                statusText.style.color = "red";
+            } else {
+                statusText.innerText = "Verdict: Authentic Video";
+                statusText.style.color = "green";
+            }
+
+        } catch (error) {
+            console.error("Analysis failed:", error);
+            statusText.innerText = "AI service offline. You may still upload.";
+            statusText.style.color = "orange";
+            document.getElementById('deepfakeVerdict').value = "false";
+        } finally {
+            document.getElementById('submitBtn').disabled = false;
+        }
+    });
+
     document.getElementById('postForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        // gather all the data
         const token = localStorage.getItem("jwt_token");
         const content = document.getElementById('postContent').value;
         const fileInput = document.getElementById('postFile');
         const status = document.getElementById('uploadStatus');
 
-        // validation make sure they upload a file
-        if(fileInput.files.length === 0) return alert("Please select a file!");
+        if (fileInput.files.length === 0) return alert("Please select a file!");
 
+        // Read the verdict that was stored by the analysis step
+        const isDeepfake = document.getElementById('deepfakeVerdict').value;
 
-        // form data construtcion
-        //use FormData because we are uploading a binary file not jus text
         const formData = new FormData();
         formData.append("content", content);
         formData.append("file", fileInput.files[0]);
-        // dont need to append username here because
-        // the backend now decodes what the user is logged in  from the Token.
+        formData.append("isDeepfake", isDeepfake);
 
         status.innerHTML = '<span style="color:blue">Uploading... Please wait.</span>';
 
         try {
-            // post api/posts
             const response = await fetch('http://localhost:8080/api/posts', {
                 method: 'POST',
                 headers: {
-                    //authentication is needed
-                    'Authorization': 'Bearer ' + token // <--- Token proves identity
-                    // dont set Content-Type
-                    //the browser sets the Content-Type to 'multipart/form-data' automatically when using FormData
-                    // tried to manually set it to 'application/json', the upload will failed.
+                    // Do not set Content-Type manually here. The browser sets it to
+                    // multipart/form-data automatically when using FormData.
+                    'Authorization': 'Bearer ' + token
                 },
                 body: formData
             });

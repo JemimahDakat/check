@@ -25,9 +25,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF (Cross-Site Request Forgery).
-                // We disable this because we are using JWT Tokens (Stateless).
-                // CSRF protection is generally needed for Session/Cookie-based apps.
+                // Disable CSRF
+                // we are using JWT Tokens -Stateless
                 .csrf(csrf -> csrf.disable())
 
                 // CORS (Cross-Origin Resource Sharing) Configuration.

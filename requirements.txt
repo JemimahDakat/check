@@ -1,0 +1,6 @@
+Flask==3.0.0
+onnxruntime
+opencv-python
+facenet-pytorch==2.5.3
+Pillow
+numpy
