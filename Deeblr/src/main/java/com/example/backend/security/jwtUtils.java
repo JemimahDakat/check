@@ -14,9 +14,10 @@ public class jwtUtils {
 
     // generate a random key in memory.
     //every time the server restarts, this key changes, invalidating all old tokens.
+    //READ ONLY VARIABLE
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    //86400000 ms = 24 hours
+    //86400000 ms = 24 hours READ ONLY
     private final long EXPIRATION_TIME = 86400000; // 24 hours
 
     //generate
@@ -39,6 +40,7 @@ public class jwtUtils {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        //READ ONLY VARIABLE
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -56,7 +58,7 @@ public class jwtUtils {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            //If any error occurs (ExpiredJwtException, SignatureException), the token is bad.
+            //If any error occurs (ExpiredJwtException, SignatureException), the token is bad
             return false;
         }
     }

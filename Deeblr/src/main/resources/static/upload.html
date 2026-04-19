@@ -46,10 +46,10 @@
     <div class="card">
         <form id="postForm">
             <p style="font-size:14px; color:#666; margin-bottom:15px;">
-                Posting as: <strong id="displayUsername" style="color:#2a5298;">Loading...</strong>
+                Posting as: <strong id="displayUsername" style="color:#2a5298;">Loading..</strong>
             </p>
 
-            <textarea id="postContent" placeholder="Write a caption..."
+            <textarea id="postContent" placeholder="Write a caption"
                       style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ddd; min-height: 80px;" required></textarea>
 
             <div style="margin-bottom:20px; border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px;">
@@ -137,7 +137,7 @@
                 statusText.innerText = `Deepfake Detected (${result.confidence}% confidence)`;
                 statusText.style.color = "red";
             } else {
-                statusText.innerText = "Verdict: Authentic Video";
+                statusText.innerText = `Verdict: Authentic (${result.confidence}% confidence)`;
                 statusText.style.color = "green";
             }
 
