@@ -8,7 +8,7 @@ import java.util.List;
 
 interface CommentRepository extends JpaRepository<Comment, Long> {}
 
-// 2. The API Endpoints
+
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -30,16 +30,16 @@ public class CommentController {
             @RequestBody Comment comment,
             @RequestHeader("Authorisation") String authHeader) {
 
-        // 1. Strip the "Bearer " prefix from the token
+        // strip the "Bearer " prefix from the token
         String token = authHeader.substring(7);
 
-        // 2. Mathematically decode the token to find the true user
+        // decode the token to find the true user
         String trueUsername = jwtUtils.extractEmail(token);
 
-        // 3. Force the comment to belong to the true user, ignoring anything the frontend sent
+        //force the comment to belong to the true user
         comment.setAuthor(trueUsername);
 
-        // 4. Save to the database
+        // save to the database
         return commentRepository.save(comment);
     }
 }

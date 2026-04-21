@@ -232,7 +232,7 @@
 
         fetch('http://localhost:8080/api/comments', {
             headers: {
-                'Authorization': 'Bearer ' + token
+                'Authorisation': 'Bearer ' + token
             }
         })
             .then(response => response.json())
@@ -269,7 +269,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token // pass the token
+                'Authorisation': 'Bearer ' + token // pass the token
             },
             body: JSON.stringify(newComment)
         }).then(response => {
@@ -277,7 +277,7 @@
                 textInput.value = ''; // clear text box
                 loadComments();       // refresh the list
             } else {
-                alert("Failed to post comment. Your sessionexpired.");
+                alert("Failed to post comment. Your session expired.");
             }
         });
     }
