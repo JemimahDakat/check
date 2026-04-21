@@ -83,7 +83,6 @@ public class PostController {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-            // Note: Ensure your Python app.py has the route @app.route('/analyse', methods=['POST'])
             String pythonUrl = "http://localhost:5000/analyse";
 
             // Package the file to send to Python
@@ -105,12 +104,12 @@ public class PostController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            // Graceful Degradation: If Python is down, return a JSON map with false.
-            // This prevents the frontend JavaScript from crashing when it looks for 'result.is_fake'
+            // if service  is down, return a JSON map with false
+            //  prevents JavaScript from crashing when looks for 'result.is_fake'
             return ResponseEntity.status(500).body(Map.of(
                     "is_fake", false,
                     "confidence", 0.0,
-                    "error", "Analysis failed or AI offline: " + e.getMessage()
+                    "error", "Analysis failed or  offline: " + e.getMessage()
             ));
         }
     }

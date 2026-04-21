@@ -16,7 +16,7 @@ app = Flask(__name__)
 ort_session = ort.InferenceSession("deepfake_model (3).onnx")
 
 # 'face_detector' holds the tool that draws a box around a face
-face_detector = MTCNN(keep_all=False, device='cpu')
+face_detector = MTCNN(image_size = 224,keep_all=False, device='cpu')
 
 
 def preprocess_face(face_tensor):
@@ -44,26 +44,33 @@ def analyse_video():
         return jsonify({"error": "No video file provided"}), 400
 
     #GET the video file from the package
-    video_file = request.files['file']
+    video_file = request.files['video']
 
     # clean the file name (e.g., changes "my first video.mp4" to "my_first_video.mp4").
     filename = secure_filename(video_file.filename)
 
     #  save the video to the folder so Python can look at it
-    temp_path = filename
+    temp_path = "temp_filename.mp4"
     video_file.save(temp_path)
 
 
     # watch the vid
 
+    print(f"--- NEW UPLOAD STARTED ---")
+    print(f"Video saved successfully to {temp_path}")
+
     # 'cv2.VideoCapture' opens the video file
     cap = cv2.VideoCapture(temp_path)
 
+    if not cap.isOpened():
+        print("OpenCV failed to open the video!")
+        return jsonify({"is_fake": False, "confidence": 0.0})
     # make an empty list to hold the formatted frames
     processed_frames = []
-
+    frames_read = 0
+    faces_found = 0
     # look at 15 frames  of the video.
-    for _ in range(15):
+    for _ in range(35):
 
         # 'cap.read()' grabs a single split-second picture from the vid
         success, frame = cap.read()
@@ -71,7 +78,8 @@ def analyse_video():
         # If the vid ended early and there are no more pictures stop the loop
         if not success:
             break
-
+        frames_read += 1
+        faces_found += 1
         # Videos are naturally Blue-Green-Red. The AI expects Red-Green-Blue. We swap the colors here.
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -84,7 +92,7 @@ def analyse_video():
         # 'if face_tensor is not None' if model detects a face
         if face_tensor is not None:
 
-            # --- Step C: Ask the AI Brain ---
+
 
             # format the face picture using our helper recipe from Step 3.
             input_data = preprocess_face(face_tensor)
@@ -96,11 +104,17 @@ def analyse_video():
     # delete the video from the computer so no storage is used
     os.remove(temp_path)
 
+    print(f"Frames read by OpenCV: {frames_read}/35")
+    print(f"Faces found by MTCNN: {faces_found}/35")
 
     # If the bucket is empty / no faces were detected
-    if len(fake_scores) == 0:
-        # Tell Java: "It's not fake, but I am 0% confident because I saw no faces."
-        return jsonify({"is_fake": False, "confidence": 0.0})
+    if len(processed_frames) == 0:
+        print("no faces found to analyse. Returning 0%.")
+        #returns to java
+        return jsonify({
+            "is_fake": False,
+            "confidence": 0.0
+        })
 
 
     sequence_tensor = np.vstack(processed_frames)
@@ -117,12 +131,12 @@ def analyse_video():
     # 2. FIXED: The Percentage Math
     confidence_percentage = round(float(probability) * 100, 2)
 
-    # The 80% threshold
-    is_fake = bool(confidence_percentage > 80.0)
+    # The 15% threshold
+    is_fake = bool(confidence_percentage >65.0)
     # send the final answer into JSON and send it back to Java
     return jsonify({
         "is_fake": is_fake,
-        "confidence": avg_score
+        "confidence": confidence_percentage
     })
 
 
@@ -131,5 +145,5 @@ if __name__ == '__main__':
     # grab the port from the system environment, or default to 5000
     port = int(os.environ.get('PORT', 5000))
 
-    print(f"Starting on port {port}...")
+    print(f"Starting on port {port}.")
     app.run(host='0.0.0.0', port=port)

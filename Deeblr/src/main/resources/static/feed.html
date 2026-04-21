@@ -49,7 +49,18 @@
     </div>
 
     <div id="feed-list">
-        <p style="text-align:center; color:#888; margin-top:50px;">Loading posts...</p>
+        <p style="text-align:center; color:#888; margin-top:50px;">Loading posts</p>
+    </div>
+
+    <div class="card" style="margin-top: 40px; border-top: 4px solid #2a5298;">
+        <h3 style="margin-top: 0;">Global Discussion</h3>
+        <p style="color: #666; font-size: 14px;">What do you think of the deepfakes on the feed today?</p>
+
+        <textarea id="commentText" placeholder="Write a comment..." rows="3" style="width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+        <button onclick="submitComment()" class="btn-primary" style="width: 100%;">Post Comment</button>
+
+        <div id="commentSection" style="margin-top: 20px;">
+        </div>
     </div>
 
 </div>
@@ -79,8 +90,9 @@
         `;
 
 
-        // 3. LOAD POSTS
+        //LOAD POSTS
         loadPosts();
+        loadComments();
     };
 
     // LOGOUT - delete the token and go back to login
@@ -150,7 +162,7 @@
                 let aiVerdictHtml ='';
 
                 if (post.mediaUrl) {
-                    // Check the 'mediaType' field we send from the backend
+                    // check media type from backend from the backend
                     if (post.mediaType === 'VIDEO') {
                         mediaHtml = `
                             <div class="image-container">
@@ -160,14 +172,14 @@
                                 </video>
                             </div>`;
 
-                        // NEW: Build the AI warning based on the database flag
+                        // make the warning based on the database flag
                         const isFake = post.isDeepfake === true || post.isDeepfake === "true"; // Handle string/bool mapping
-                        const verdictText = isFake ? " Warning: SYNTHETIC MEDIA DETECTED " : "Verdict: Authentic Video";
+                        const verdictText = isFake ? "SYNTHETIC MEDIA DETECTED " : "Authentic Video";
                         const verdictColor = isFake ? "red" : "green";
 
                         aiVerdictHtml = `
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
-                                <button class="btn-toggle" onclick="toggleVerdict(this)">👁️ Reveal AI Verdict</button>
+                                <button class="btn-toggle" onclick="toggleVerdict(this)">RevealVerdict</button>
                                 <p class="verdict-tag" style="display: none; font-weight: bold; margin-top: 10px; color: ${verdictColor};">
                                     ${verdictText}
                                 </p>
@@ -201,7 +213,9 @@
                             ${postContent}
                         </div>
 
-                        ${mediaHtml} </div>
+                        ${mediaHtml}
+                        ${aiVerdictHtml}
+                        </div>
                 `;
                 // append new card to the list
                 container.innerHTML += html;
@@ -210,8 +224,62 @@
 
         } catch (error) {
             console.error("Error:", error);
-            container.innerHTML = "<p style='text-align:center; color:red;'>Server error. Is backend running?</p>";
+            container.innerHTML = "<p style='text-align:center; color:red;'>Server error.</p>";
         }
+    }
+    function loadComments() {
+        const token = localStorage.getItem("jwt_token"); // get the token
+
+        fetch('http://localhost:8080/api/comments', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => response.json())
+            .then(comments => {
+                const section = document.getElementById('commentSection');
+                section.innerHTML = '';
+
+                comments.forEach(c => {
+                    section.innerHTML += `
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <strong style="color: #2a5298;">${c.author || 'User'}</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">${c.text}</p>
+                    </div>
+                `;
+                });
+            })
+            .catch(err => console.error("Could not load comments", err));
+    }
+
+    // sumbit a comment
+    function submitComment() {
+        const textInput = document.getElementById('commentText');
+        const token = localStorage.getItem("jwt_token");
+
+        if(!token) return alert("You must be logged in to comment!");
+        if(!textInput.value) return alert("Please write a comment first!");
+
+        // olnly send text and backend figures out the author
+        const newComment = {
+            text: textInput.value
+        };
+
+        fetch('http://localhost:8080/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token // pass the token
+            },
+            body: JSON.stringify(newComment)
+        }).then(response => {
+            if (response.ok) {
+                textInput.value = ''; // clear text box
+                loadComments();       // refresh the list
+            } else {
+                alert("Failed to post comment. Your sessionexpired.");
+            }
+        });
     }
 </script>
 
