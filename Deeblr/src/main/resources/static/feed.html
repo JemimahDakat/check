@@ -52,16 +52,7 @@
         <p style="text-align:center; color:#888; margin-top:50px;">Loading posts</p>
     </div>
 
-    <div class="card" style="margin-top: 40px; border-top: 4px solid #2a5298;">
-        <h3 style="margin-top: 0;">Global Discussion</h3>
-        <p style="color: #666; font-size: 14px;">What do you think of the deepfakes on the feed today?</p>
 
-        <textarea id="commentText" placeholder="Write a comment..." rows="3" style="width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
-        <button onclick="submitComment()" class="btn-primary" style="width: 100%;">Post Comment</button>
-
-        <div id="commentSection" style="margin-top: 20px;">
-        </div>
-    </div>
 
 </div>
 
@@ -92,7 +83,6 @@
 
         //LOAD POSTS
         loadPosts();
-        loadComments();
     };
 
     // LOGOUT - delete the token and go back to login
@@ -215,29 +205,45 @@
 
                         ${mediaHtml}
                         ${aiVerdictHtml}
+
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                        <div id="commentList_${post.id}" style="margin-bottom: 10px; max-height: 150px; overflow-y: auto;">
+                            </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="commentInput_${post.id}" placeholder="Add a comment" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="submitComment(${post.id})" class="btn-primary" style="padding: 8px 15px;">Post</button>
                         </div>
+                    </div>
+                <! --here -->
                 `;
                 // append new card to the list
                 container.innerHTML += html;
             });
-
+            posts.forEach(post => loadComments(post.id));
 
         } catch (error) {
             console.error("Error:", error);
             container.innerHTML = "<p style='text-align:center; color:red;'>Server error.</p>";
         }
     }
-    function loadComments() {
+    function loadComments(postId) {
         const token = localStorage.getItem("jwt_token"); // get the token
 
-        fetch('http://localhost:8080/api/comments', {
+        fetch(`http://localhost:8080/api/comments/post/${postId}`, {
             headers: {
-                'Authorisation': 'Bearer ' + token
+                'Authorization': 'Bearer ' + token
             }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // dsaftey net do not try to read json if there is an error
+                    throw new Error(`Server returned status: ${response.status}`);
+                }
+                return response.json()
+            })
             .then(comments => {
-                const section = document.getElementById('commentSection');
+                const section = document.getElementById(`commentList_${postId}`);
                 section.innerHTML = '';
 
                 comments.forEach(c => {
@@ -253,8 +259,8 @@
     }
 
     // sumbit a comment
-    function submitComment() {
-        const textInput = document.getElementById('commentText');
+    function submitComment(postId) {
+        const textInput = document.getElementById(`commentInput_${postId}`);
         const token = localStorage.getItem("jwt_token");
 
         if(!token) return alert("You must be logged in to comment!");
@@ -262,6 +268,7 @@
 
         // olnly send text and backend figures out the author
         const newComment = {
+            postId : postId,
             text: textInput.value
         };
 
@@ -269,17 +276,18 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorisation': 'Bearer ' + token // pass the token
+                'Authorization': 'Bearer ' + token // pass the token
             },
             body: JSON.stringify(newComment)
         }).then(response => {
             if (response.ok) {
                 textInput.value = ''; // clear text box
-                loadComments();       // refresh the list
+                loadComments(postId);       // refresh the list
             } else {
                 alert("Failed to post comment. Your session expired.");
             }
         });
+
     }
 </script>
 

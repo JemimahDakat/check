@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-interface CommentRepository extends JpaRepository<Comment, Long> {}
+interface CommentRepository extends JpaRepository<Comment, Long> {
+    List<Comment> findByPostId(Long postId);
+}
 
 
 @RestController
@@ -19,16 +21,16 @@ public class CommentController {
     @Autowired
     private jwtUtils jwtUtils;
 
-    // Get all comments to display on the page
-    @GetMapping
-    public List<Comment> getAllComments() {
-        return commentRepository.findAll();
+    // get comments for a specific post
+    @GetMapping("/post/{postId}")
+    public List<Comment> getComments(@PathVariable Long postId) {
+        return commentRepository.findByPostId(postId);
     }
 
     @PostMapping
     public Comment addComment(
             @RequestBody Comment comment,
-            @RequestHeader("Authorisation") String authHeader) {
+            @RequestHeader("Authorization") String authHeader) {
 
         // strip the "Bearer " prefix from the token
         String token = authHeader.substring(7);

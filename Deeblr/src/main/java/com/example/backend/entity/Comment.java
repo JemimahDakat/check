@@ -7,6 +7,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long postId;
     private String author;
 
     @Column(length = 1000) //max 1000 characters
@@ -15,6 +16,8 @@ public class Comment {
     // Standard Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public Long getPostId() { return postId; }
+    public void setPostId(Long postId) { this.postId = postId; }
     public String getAuthor() { return author; }
     public void setAuthor(String author) { this.author = author; }
     public String getText() { return text; }
