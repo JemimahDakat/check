@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # load the rnn and lstm into memory as soon as the file starts
 # 'ort_session' holds trained deepfake model
-ort_session = ort.InferenceSession("deepfake_model (350).onnx")
+ort_session = ort.InferenceSession("deepfake_model30.onnx")
 
 # 'face_detector' holds the tool that draws a box around a face
 face_detector = MTCNN(image_size = 224,keep_all=False, device='cpu')
@@ -70,7 +70,7 @@ def analyse_video():
     frames_read = 0
     faces_found = 0
     # look at 15 frames  of the video.
-    for _ in range(50):
+    for _ in range(30):
 
         # 'cap.read()' grabs a single split-second picture from the vid
         success, frame = cap.read()
