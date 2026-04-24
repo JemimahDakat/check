@@ -47,7 +47,19 @@
         <span class="badge">Live</span>
 
     </div>
+    <div class="card" style="margin-bottom: 20px; padding: 15px; background: #fdfdfd;">
+        <h3 style="margin-top: 0; color: #2a5298; border-bottom: 2px solid #eee; padding-bottom: 5px;">Notifications</h3>
 
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="addFriendInput" placeholder="Enter exact username..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <button onclick="sendFriendRequest()" class="btn-primary" style="padding: 8px 15px;">Send Request</button>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0; color: #555;">Pending Requests</h4>
+        <div id="friend-requests-list">
+            <p style="color: #888; font-size: 14px; margin: 0;">No new requests.</p>
+        </div>
+    </div>
     <div id="feed-list">
         <p style="text-align:center; color:#888; margin-top:50px;">Loading posts</p>
     </div>
@@ -83,6 +95,7 @@
 
         //LOAD POSTS
         loadPosts();
+        loadPendingRequests();
     };
 
     // LOGOUT - delete the token and go back to login
@@ -206,6 +219,13 @@
                         ${mediaHtml}
                         ${aiVerdictHtml}
 
+
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <button onclick="toggleLike(${post.id})" class="btn-primary" style="background: none; border: 1px solid #ccc; color: #333; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
+                                Like <span id="likeCount_${post.id}">0</span>
+                            </button>
+                        </div>
+
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
                         <div id="commentList_${post.id}" style="margin-bottom: 10px; max-height: 150px; overflow-y: auto;">
                             </div>
@@ -284,10 +304,132 @@
                 textInput.value = ''; // clear text box
                 loadComments(postId);       // refresh the list
             } else {
-                alert("Failed to post comment. Your session expired.");
+                alert("Failed to post comment.");
             }
         });
 
+    }
+    function sendFriendRequest() {
+        const targetUsername = document.getElementById('addFriendInput').value.trim();
+        const token = localStorage.getItem("jwt_token");
+
+        if (!targetUsername) return alert("Please enter a username.");
+
+        fetch(`http://localhost:8080/api/friends/request/${targetUsername}`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+            .then(async response => {
+                if (response.ok) {
+                    alert(`Friend request sent to ${targetUsername}!`);
+                    document.getElementById('addFriendInput').value = ''; // clear input
+                } else {
+                    const err = await response.text();
+                    alert(`Could not send request: ${err}`);
+                }
+            })
+            .catch(err => console.error("Could not find User", err));
+    }
+
+    // load all incoming Pending Requests
+    function loadPendingRequests() {
+        const token = localStorage.getItem("jwt_token");
+        const container = document.getElementById('friend-requests-list');
+
+        fetch('http://localhost:8080/api/friends/requests', {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch requests");
+                return response.json();
+            })
+            .then(requesters => {
+                if (requesters.length === 0) {
+                    container.innerHTML = `<p style="color: #888; font-size: 14px; margin: 0;">No new requests.</p>`;
+                    return;
+                }
+
+                container.innerHTML = ''; // clear loading text
+
+                // loop through the array of usernames and build the UI
+                requesters.forEach(username => {
+                    const requestHtml = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 8px;">
+                        <strong style="color: #333;">${username}</strong>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="handleRequest('${username}', 'accept')" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Accept</button>
+                            <button onclick="handleRequest('${username}', 'reject')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Reject</button>
+                        </div>
+                    </div>
+                `;
+                    container.innerHTML += requestHtml;
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<p style="color: red; font-size: 14px;">Error loading requests.</p>`;
+            });
+    }
+
+    // Accept or Reject freindship
+    function handleRequest(username, action) {
+        const token = localStorage.getItem("jwt_token");
+        // Action will be either "accept" or "reject"
+
+        fetch(`http://localhost:8080/api/friends/${action}/${username}`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert(`Request ${action}ed!`);
+                    loadPendingRequests(); // Refresh the list
+                } else {
+                    alert(`Failed to ${action} request.`);
+                }
+            })
+            .catch(err => console.error(`Error processing ${action}:`, err));
+    }
+    // get the initial like count for the post
+    function loadLikes(postId) {
+        const token = localStorage.getItem("jwt_token");
+        fetch(`http://localhost:8080/api/likes/post/${postId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token // attach the token
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to load likes");
+                return response.json();
+            })
+            .then(count => {
+                document.getElementById(`likeCount_${postId}`).innerText = count;
+            })
+            .catch(err => console.error("Could not load likes", err));
+    }
+
+    // Handle the user clicking the Like button
+    function toggleLike(postId) {
+        const token = localStorage.getItem("jwt_token");
+
+        if(!token) return alert("You must be logged in to like posts!");
+
+        fetch(`http://localhost:8080/api/likes/post/${postId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Refresh the like count instantly without reloading the page
+                    loadLikes(postId);
+                } else {
+                    alert("Session expired.");
+                }
+            });
     }
 </script>
 
