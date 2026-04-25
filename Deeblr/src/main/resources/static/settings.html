@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="padding: 40px; font-family: sans-serif;">
+
+<h2>Account Settings</h2>
+
+<div class="card" style="max-width: 500px; padding: 20px;">
+    <label>
+        <input type="checkbox" id="privateToggle">
+        <strong>Private your account </strong>
+    </label>
+    <br><br>
+
+    <label>New Username:</label><br>
+    <input type="text" id="newUsername" placeholder="Leave blank to keep current"><br><br>
+
+    <label>New Password:</label><br>
+    <input type="password" id="newPassword" placeholder="Leave blank to keep current"><br><br>
+
+    <button onclick="saveSettings()" style="padding: 10px 20px; background: #2a5298; color: white;">Save Changes</button>
+</div>
+
+<script>
+
+    // if the user changes their username or password jwt token is invalid
+    // force them to log back in to get a new token.
+    function saveSettings() {
+        const token = localStorage.getItem("jwt_token");
+        if (!token) return alert("Not logged in!");
+
+        const payload = {
+            isPrivate: document.getElementById('privateToggle').checked.toString(),
+            newUsername: document.getElementById('newUsername').value,
+            newPassword: document.getElementById('newPassword').value
+        };
+
+        fetch('http://localhost:8080/api/settings/update', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(async response => {
+                const msg = await response.text();
+                if (response.ok) {
+                    alert(msg);
+                    // force logout to get token with the new username
+                    localStorage.clear();
+                    window.location.href = "login.html";
+                } else {
+                    alert("Error: " + msg);
+                }
+            });
+    }
+</script>
+</body>
+</html>
