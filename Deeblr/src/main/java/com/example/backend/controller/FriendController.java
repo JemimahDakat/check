@@ -71,6 +71,24 @@ public class FriendController {
         }
         return ResponseEntity.badRequest().body("Invalid status");
     }
+    // REJECT REQUEST
+    @PostMapping("/reject/{senderUsername}")
+    public ResponseEntity<?> rejectFriendRequest(@PathVariable String senderUsername, Principal principal) {
+        String currentUsername = principal.getName();
+        User currentUser = userRepo.findByUsername(currentUsername).orElseThrow();
+        User requester = userRepo.findByUsername(senderUsername).orElseThrow();
+
+        // find the pending request
+        Friend friendship = friendshipRepository.findByRequesterAndAddressee(requester, currentUser)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        // only reject if it is currently pending
+        if (friendship.getStatus() == FriendStatus.PENDING) {
+            friendshipRepository.delete(friendship); // delete the request
+            return ResponseEntity.ok(Collections.singletonMap("message", "Request rejected"));
+        }
+        return ResponseEntity.badRequest().body("Invalid status");
+    }
 
     // GET PENDING REQUESTS
     @GetMapping("/requests")

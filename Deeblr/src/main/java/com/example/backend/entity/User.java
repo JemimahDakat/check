@@ -28,6 +28,10 @@ public class User {
     @Column(unique = true , nullable = false)
     private String email;
 
+    //public or private account
+    @Column(name = "is_private")
+    private boolean isPrivate = false;
+
     // 0 = Not Verified, 1 = Verified
     private boolean enabled;
 
@@ -72,4 +76,6 @@ public class User {
     public void setRole(String role) { this.role = role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public boolean isPrivate() { return isPrivate; }
+    public void setPrivate(boolean aPrivate) { isPrivate = aPrivate; }
 }

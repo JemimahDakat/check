@@ -6,6 +6,7 @@ import com.example.backend.service.EmailService;
 import com.example.backend.security.jwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private UserRepo userRepo;
     @Autowired private EmailService emailService;
     @Autowired private jwtUtils jwtUtils;
@@ -27,10 +29,12 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Username taken");
         }
 
-       User user = new User();
+        User user = new User();
         user.setUsername(username);
-        //HASH this password before saving.
-        user.setPassword(password);
+
+        // 1. FIXED: HASH this password before saving using BCrypt.
+        user.setPassword(passwordEncoder.encode(password));
+
         user.setEmail(email);
 
         // Create user as "Disabled" (0) Account is locked until they verify email.
@@ -78,19 +82,22 @@ public class AuthController {
 
         return "<html><body><h1>Success!</h1><p>Account verified.</p></body></html>";
     }
+
     //LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
         User user = userRepo.findByUsername(username).orElse(null);
 
-        //the user must exist and password must match
-        if (user != null && user.getPassword().equals(password)) {
+        // 2. FIXED: Use passwordEncoder.matches() instead of .equals()
+        // It securely compares the plain-text password from the user with the BCrypt hash in the database.
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+
             // check if verified
             if (!user.isEnabled()) {
                 return ResponseEntity.status(403).body("Account not verified. Check email.");
             }
 
-            // 2. GENERATE THE session token for the next 10 hours
+            // GENERATE THE session token for the next 10 hours
             String token = jwtUtils.generateToken(user.getUsername());
 
             // return a JSON object (Map) containing the token.
