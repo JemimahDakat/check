@@ -12,19 +12,18 @@ public class Post {
     private Long id;
 
 
-    //DESIGN DECISION: Denormalization.
-    //    // Instead of creating a complex link (@ManyToOne) to the User table, we simply store the username as a String.
-    //    // WHY: This improves performance when loading the feed. We don't need to load the user's
-    //    // full profile (password, email, etc.) just to display their name on a post.
+    //denormalisation.
+    // not using manytoone to users table -  store the username as a String.
+    // do not need to load the user's full profile to display their name on a post.
     private String username;
 
     private String content;
-    //o not store the actual image file in the database because it would be too slow/heavy.
-    //    // Instead, we store the URL (link) to where the file is hosted (e.g., AWS S3).
+    //do not store the actual image file in the database because it would be too slow/heavy.
+    // store the URL to where the file is hosted in aws.
     private String mediaUrl;
 
-    //This field tells the Frontend whether to render an <img /> tag or a <video /> tag.
-    //    // Values will be "IMAGE" or "VIDEO".
+    //This object  tells the Frontend whether to render an <img /> tag or a <video /> tag.
+    //values will be "IMAGE" or "VIDEO".
     private String mediaType; // "IMAGE" or "VIDEO"
     //Defaults to the current time when the object is created.
     private LocalDateTime createdAt = LocalDateTime.now();
