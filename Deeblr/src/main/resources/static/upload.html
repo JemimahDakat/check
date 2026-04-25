@@ -103,8 +103,6 @@
 
         // Images do not need deepfake scanning, only videos do
         if (!file.type.startsWith('video/')) {
-            statusText.innerText = "Images bypass AI scanning. Ready to post!";
-            statusText.style.color = "green";
             document.getElementById('deepfakeVerdict').value = "false";
             return;
         }
@@ -143,7 +141,7 @@
 
         } catch (error) {
             console.error("Analysis failed:", error);
-            statusText.innerText = "AI service offline. You may still upload.";
+            statusText.innerText = "Service offline. You can still upload.";
             statusText.style.color = "orange";
             document.getElementById('deepfakeVerdict').value = "false";
         } finally {

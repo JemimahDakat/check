@@ -6,8 +6,29 @@
     <title>Deeblr - Home</title>
 
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        .refresh-btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .refresh-btn:hover {
+            background: #1e3c72;
+        }
+    </style>
 </head>
-<body class="feed-body"> <nav class="navbar">
+<body class="feed-body">
+
+<nav class="navbar">
     <div class="brand-logo">
         <img src="../../java/com/example/frontend/logo.png" alt="Deeblr Logo" style="height: 60px; width: auto;">
     </div>
@@ -27,10 +48,6 @@
 
     <div class="card" style="text-align: center; padding: 50px;">
         <h1 style="color: #2a5298; margin-bottom: 15px;">Welcome to Deeblr</h1>
-        <p style="color: #666; font-size: 16px; margin-bottom: 30px; line-height: 1.6;">
-            The unified platform for detecting deepfakes in real-time.<br>
-            Verify videos, analyze audio, and ensure authenticity in a digital world.
-        </p>
 
         <div style="display: flex; justify-content: center; gap: 20px;">
             <a href="login.html" class="btn-primary" style="text-decoration: none; display: inline-block;">Login</a>
@@ -41,29 +58,89 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="avatar-circle" style="background: #2a5298;">AI</div>
-            <div class="meta">
-                <strong>Advanced Detection</strong>
-                <span class="tag friend">Feature</span>
-            </div>
-        </div>
-        <p>Our system uses a hybrid CNN + RNN model to analyze both visual artifacts and audio inconsistencies, providing a comprehensive deepfake score.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="color: #333; margin: 0;">Discover Posts</h3>
+        <button onclick="loadRandomPosts()" class="refresh-btn">Refresh Feed</button>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="avatar-circle" style="background: #d93025;">RT</div>
-            <div class="meta">
-                <strong>Real-Time Analysis</strong>
-                <span class="tag friend">Feature</span>
-            </div>
-        </div>
-        <p>Upload content and get instant feedback. We process frames in real-time to ensure you can verify media as you consume it.</p>
+    <div id="public-feed-list">
+        <p style="text-align: center; color: #888;">Loading feed...</p>
     </div>
 
 </div>
+
+<script>
+    // Load posts immediately when the page opens
+    window.onload = loadRandomPosts;
+
+    function loadRandomPosts() {
+        const container = document.getElementById('public-feed-list');
+        container.innerHTML = "<p style='text-align:center; color:#888;'>Loading posts...</p>";
+
+        // public endpoint
+        fetch('http://localhost:8080/api/posts/public/random')
+            .then(response => {
+                if (!response.ok) throw new Error("Could not fetch posts");
+                return response.json();
+            })
+            .then(posts => {
+                container.innerHTML = "";
+
+                if (posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="card" style="text-align:center; padding:40px;">
+                            <p style="color:#888;">No posts available right now.</p>
+                        </div>`;
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const firstLetter = post.username ? post.username.charAt(0).toUpperCase() : '?';
+                    const postContent = post.content ? post.content : "";
+
+                    let mediaHtml = '';
+
+                    // Reuse our media rendering logic so videos play on the homepage too
+                    if (post.mediaUrl) {
+                        if (post.mediaType === 'VIDEO') {
+                            mediaHtml = `
+                                <div class="image-container" style="margin-top: 15px;">
+                                    <video controls preload="metadata" style="width:100%; border-radius:8px; background:black;">
+                                        <source src="${post.mediaUrl}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>`;
+                        } else {
+                            mediaHtml = `<div class="image-container" style="margin-top: 15px;"><img src="${post.mediaUrl}" style="max-width:100%; border-radius:8px;"></div>`;
+                        }
+                    }
+
+                    const html = `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="avatar-circle">${firstLetter}</div>
+                                <div class="meta">
+                                    <strong>${post.username || 'Unknown'}</strong>
+                                    <span class="tag" style="background:#e0e0e0; color:#333;">Public</span>
+                                </div>
+                            </div>
+
+                            <div style="font-size:15px; color:#444; line-height:1.5;">
+                                ${postContent}
+                            </div>
+
+                            ${mediaHtml}
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            })
+            .catch(err => {
+                console.error("Error loading posts", err);
+                container.innerHTML = "<p style='text-align:center; color:red;'>Failed to load the feed.</p>";
+            });
+    }
+</script>
 
 </body>
 </html>
