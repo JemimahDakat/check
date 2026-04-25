@@ -14,17 +14,11 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     // matches one of the names in the provided list.
     List<Post> findByUsernameIn(List<String> usernames);
 
-    //This query is the engine of the "Social Feed". It runs one optimized search
-    //     * in the database to find all relevant posts.
-    //     * * Logic Breakdown:
-    //     * 1. p.username = :me  -> Find posts written by the current user.
-    //     * 2. OR ... IN (SELECT ... addressee) -> Find posts by people I sent friend requests to (and they accepted).
-    //     * 3. OR ... IN (SELECT ... requester) -> Find posts by people who sent me friend requests (and I accepted).
-    //     * * ORDER BY p.createdAt DESC ensures the newest posts appear at the top.
-    //     */
     @Query("SELECT p FROM Post p WHERE p.username = :me " +
             "OR p.username IN (SELECT f.addressee.username FROM Friend f WHERE f.requester.username = :me AND f.status = :status) " +
             "OR p.username IN (SELECT f.requester.username FROM Friend f WHERE f.addressee.username = :me AND f.status = :status) " +
             "ORDER BY p.createdAt DESC")
     List<Post> findFeed(@Param("me") String myUsername, @Param("status") FriendStatus status);
+    @Query(value = "SELECT p.* FROM posts p JOIN users u ON p.username = u.username WHERE u.is_private = false ORDER BY RAND() LIMIT 10", nativeQuery = true)
+    List<Post> findRandomPublicPosts();
 }
