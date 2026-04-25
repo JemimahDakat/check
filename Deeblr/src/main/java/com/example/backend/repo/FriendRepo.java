@@ -23,10 +23,10 @@ public interface FriendRepo extends JpaRepository<Friend, Long> {
     Optional<Friend> findByRequesterAndAddressee(User requester, User addressee);
 
     // FETCH LISTS:
-    // 1. "Who has asked me?" (Incoming Requests)
+    // Incoming Requests
     List<Friend> findAllByAddresseeAndStatus(User addressee, FriendStatus status);
 
-    // 2. "Who have I asked?" (Outgoing Requests)
+    // outgoing Requests
     // (Consolidated duplicate methods here for cleaner code)
     List<Friend> findAllByRequesterAndStatus(User requester, FriendStatus status);
 }

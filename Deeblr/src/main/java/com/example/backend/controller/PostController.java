@@ -79,7 +79,7 @@ public class PostController {
     }
 
     @PostMapping("/analyse")
-    public ResponseEntity<?> analyzseVideoBeforePost(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> analyseVideoBeforePost(@RequestParam("file") MultipartFile file) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -112,5 +112,9 @@ public class PostController {
                     "error", "Analysis failed or  offline: " + e.getMessage()
             ));
         }
+    }
+    @GetMapping("/public/random")
+    public List<Post> getRandomPublicPosts() {
+        return postRepository.findRandomPublicPosts();
     }
 }
