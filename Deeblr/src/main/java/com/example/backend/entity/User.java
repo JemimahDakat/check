@@ -4,16 +4,14 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 //this class represents a User in our system.
-// We use the @Entity annotation to tell Hibernate (our database manager)
-// * to automatically create a table in the database called 'users' based on this class.
+//enitity tell Hibernate to automatically create a table in the database called 'users' based on this class.
 @Entity
 @Table(name = "users")
 public class User {
 
     //@Id marks this field as the Primary Key (the unique identifier for this row).
-    // @GeneratedValue(strategy = IDENTITY) tells the database to auto-increment the number every time a new user is registered.
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //auto-increment the number every time a new user is registered
     private Long id;
 
     //RULE- no two users can have the same username.

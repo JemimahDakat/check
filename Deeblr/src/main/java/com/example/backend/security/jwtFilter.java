@@ -2,22 +2,29 @@ package com.example.backend.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import jakarta.servlet.http.HttpServletRequest; //headers, params, body,
+import jakarta.servlet.http.HttpServletResponse; //status codes, headers, body
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; //standard object for representing an authenticated user.
+// holds  the principal (who), credentials (proof), and authorities (roles)
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.filter.OncePerRequestFilter; //guarantees doFilterInternal() is called EXACTLY ONCE
+
 import java.io.IOException;
 import java.util.Collections;
 
 
 // the filter intercepts all  HTTP requests coming into the server
-// its job is to check if the user sent a valid JWT Token.
+// its job is to check if the user sent a valid JWT Token
+// check if the request carries a valid JWT in the Authorization header.
+//If valid, extract the user's identity and register them with Spring Security.
+// ALYWS pass the request onwards, regardless of outcome —
+// SecurityConfig Blocks unauthorised access
 @Component
 public class jwtFilter extends OncePerRequestFilter {
 
+    //used final because it's injected once at construction and should never change.
     private final jwtUtils jwtUtils;
 
     public jwtFilter(jwtUtils jwtUtils) {
