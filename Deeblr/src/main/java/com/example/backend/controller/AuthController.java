@@ -15,6 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    //interface that performs a one-way transformation of a password to let the password be stored securely
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private UserRepo userRepo;
     @Autowired private EmailService emailService;
@@ -24,7 +25,7 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestParam String username,
                                       @RequestParam String password,
                                       @RequestParam String email) {
-        //Check if username exists to prevent duplicates (Database would error, but this is cleaner)
+        //Check if username exists to prevent duplicates
         if (userRepo.findByUsername(username).isPresent()) {
             return ResponseEntity.badRequest().body("Username taken");
         }
@@ -32,7 +33,7 @@ public class AuthController {
         User user = new User();
         user.setUsername(username);
 
-        // 1. FIXED: HASH this password before saving using BCrypt.
+        // hash the password before saving using BCrypt.
         user.setPassword(passwordEncoder.encode(password));
 
         user.setEmail(email);
@@ -50,7 +51,7 @@ public class AuthController {
         try {
             emailService.sendVerificationEmail(email, token);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error sending email: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error sending email " + e.getMessage());
         }
 
         return ResponseEntity.ok("Registration successful. Check email to verify.");
@@ -72,7 +73,7 @@ public class AuthController {
 
         // Check if already enabled (1)
         if (user.isEnabled()) {
-            return "<html><body><h1>Already Verified</h1><p>You can <a href='http://localhost:8080/login.html'>Login here</a></p></body></html>";
+            return "<html><body><h1>Already Verified</h1></body></html>";
         }
 
         // ACTIVATE ACCOUNT clear the token and enable the user.
@@ -87,9 +88,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
         User user = userRepo.findByUsername(username).orElse(null);
-
-        // 2. FIXED: Use passwordEncoder.matches() instead of .equals()
-        // It securely compares the plain-text password from the user with the BCrypt hash in the database.
+        // compares the plain-text password from the user with the BCrypt hash in the database.
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
 
             // check if verified

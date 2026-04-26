@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+//a cts as a data access layer, mediating between your domain application and the database
+// catch persistence-specific exceptions and re-throw them
 public interface FriendRepo extends JpaRepository<Friend, Long> {
 
     // This custom query checks if a relationship exists in EITHER direction (A->B or B->A).
@@ -27,6 +29,5 @@ public interface FriendRepo extends JpaRepository<Friend, Long> {
     List<Friend> findAllByAddresseeAndStatus(User addressee, FriendStatus status);
 
     // outgoing Requests
-    // (Consolidated duplicate methods here for cleaner code)
     List<Friend> findAllByRequesterAndStatus(User requester, FriendStatus status);
 }
