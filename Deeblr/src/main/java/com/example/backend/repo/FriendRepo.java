@@ -28,6 +28,6 @@ public interface FriendRepo extends JpaRepository<Friend, Long> {
     // Incoming Requests
     List<Friend> findAllByAddresseeAndStatus(User addressee, FriendStatus status);
 
-    // outgoing Requests
+    // outgoing Requests --- not implemented
     List<Friend> findAllByRequesterAndStatus(User requester, FriendStatus status);
 }
